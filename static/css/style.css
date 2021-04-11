@@ -1,18 +1,23 @@
+:root{
+    --spaceship: white;
+}
+
 body {
     background-color: red;
     height: '13300px impo !important';
     display: block;
+    margin:0;
 }
 
 #arcade{
     position: fixed;
     display: grid;
     grid-template: 10vh auto 20vh / 100%;
-    width: 100%;
+    width: 100vw;
     height: 100vh;
-    top: 0;
-    left: 0;
     background-color: purple;
+    top: 0;
+    margin:0;
 }
 
 header{
@@ -32,15 +37,25 @@ footer {
 
 #play-area {
     background-color: black;
-    display: block;
-    align-self: stretch;
+    display: flex;
     width: 80%;
 }
 
 .entity {
     width: 50px;
     height: 50px;
-    display: inline-block;
-    /* position: absolute; */
+    display: inline-flex;
+    flex-direction: column;
+    font-size: .1em;
     transition: transform .1s linear;
+    padding: 0;
+    justify-content: center;
+}
+
+.spaceship_position{
+    width: 2rem;
+    height: 2rem;
+    position: absolute;
+    bottom: 25vh;
+    background: purple;
 }

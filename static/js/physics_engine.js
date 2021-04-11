@@ -1,17 +1,21 @@
 // play area
 let playArea = document.getElementById('play-area');
 
+// consts
+const lasers = [];
+
 // Entity Model
 class Entity {
-    constructor(parentElem, color) {
+    constructor(parentElem, className) {
         this.x;
         this.y;
         this.cx;
         this.cy;
         this.width;
         this.height;
-        this.color = color;
         this.domElem;
+        this.sprite;
+        this.className = className;
         this.parentElem = parentElem;
 
         this.domInit();
@@ -39,8 +43,10 @@ class Entity {
 Entity.prototype.domInit = function () {
     this.domElem = document.createElement('div');
     this.domElem.classList.add('entity');
-
-    if (this.color) this.domElem.style.backgroundColor = this.color;
+    
+    this.sprite = document.createElement('div');
+    this.sprite.classList.add(this.className);
+    this.domElem.appendChild(this.sprite);
 
     // attach element to get computed properties
     this.parentElem.appendChild(this.domElem);
@@ -53,6 +59,12 @@ Entity.prototype.followScroller = function(normalizedPosition){
     let { width: parentWidth } = this.parentBoundRect;
     this.x = normalizedPosition * (parentWidth - this.width);
     this.domElem.style.transform = `translateX(${this.x}px)`;
+}
+
+Entity.prototype.shootLaser = function(){
+    const direction = this.className == 'spaceship' ? -1 : 1;
+    const laser = new Entity(playArea, laser);
+    lasers.push(laser);
 }
 
 // using DOM getBoundClientRect update Entity's props
@@ -90,18 +102,23 @@ Entity.prototype.detectColission = function (other) {
 }
 
 // spaceCraft and Alien
-let spaceCraft = new Entity(playArea, 'purple');
-// let alien = new Entity(playArea, 'blue');
+let spaceCraft = new Entity(playArea, 'spaceship');
+spaceCraft.domElem.classList.add('spaceship_position')
+
 const aliens = [];
 for (let i = 0; i < 20; i++) {
-    let alien = new Entity(playArea, 'blue');
+    let alien = new Entity(playArea, 'alien');
     aliens.push(alien);
 
 }
 
 // Stretch the window Hack
-const longElemHeight = 10000;
-const topLimit = longElemHeight / 2.3;
+let longElemHeight = 10000;
+let topLimit = longElemHeight / 2.3;
+if(navigator.maxTouchPoints) {
+    longElemHeight /= 10;
+    topLimit = longElemHeight / 2.5; // Mobile device
+}
 
 bottomDown = document.createElement('div');
 bottomDown.style.height = `${longElemHeight + window.innerHeight}px`;
@@ -114,10 +131,10 @@ const motionRange = bottomLimit - topLimit;
 function scrollToLimit() {
     if (scrollY < topLimit) {
         console.log(scrollY, scrollY < topLimit, 'moving to top')
-        scrollTo(0, topLimit)
+        scrollTo(0, topLimit + 1)
     }
     else if (scrollY > bottomLimit) {
-        scrollTo(0, bottomLimit)
+        scrollTo(0, bottomLimit - 1)
     }
 
     let normalizedPosition = (scrollY - topLimit) / motionRange;
@@ -151,9 +168,9 @@ function gameLoop() {
         loopTimeout = setTimeout(() => {
 
             colissionResolution();
-            gameLoop()
+            gameLoop();
 
-        }, 43);
+        }, 33);
     }
 }
 
@@ -162,3 +179,9 @@ gameLoop();
 // set the scroller to the middle of the page hack
 // browser remembers the scrolling position and goes to it
 setTimeout(() => scrollTo(0, document.body.scrollHeight / 2), 600)
+
+
+//on window resize get innerHeight in the footer
+let heightPrompt = document.getElementById('inner-height');
+heightPrompt.style.fontSize = '3rem';
+addEventListener('resize', () => heightPrompt.innerText =  `Height: ${window.innerHeight} Touch points: ${navigator.maxTouchPoints}`)
