@@ -7,19 +7,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DOM Invader</title>
     <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/sprites.css">
     <script src="static/js/physics_engine.js" defer></script>
 </head>
 
 <body>
     <div id="arcade">
         <header>
-            
+            <h1>Scroll wheel to move | Click to shoot</h1>
         </header>
         <main>
-            <section id="play-area">
+            <section id="play-area" >
+                <div id="alien-block"></div>
             </section>
         </main>
         <footer>
+            <div id='inner-height'></div>
             <button onclick="stopLoop = !stopLoop; if(!stopLoop) gameLoop()">Toggle Gameloop</button>
         </footer>
     </div>
