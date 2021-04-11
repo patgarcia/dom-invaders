@@ -17,6 +17,7 @@ class Entity {
         this.sprite;
         this.className = className;
         this.parentElem = parentElem;
+        this.shotBy;
 
         this.domInit();
     }
@@ -43,9 +44,10 @@ class Entity {
 Entity.prototype.domInit = function () {
     this.domElem = document.createElement('div');
     this.domElem.classList.add('entity');
+    this.domElem.classList.add(this.className);
     
     this.sprite = document.createElement('div');
-    this.sprite.classList.add(this.className);
+    this.sprite.classList.add(`${this.className}_sprite`);
     this.domElem.appendChild(this.sprite);
 
     // attach element to get computed properties
@@ -58,13 +60,26 @@ Entity.prototype.domInit = function () {
 Entity.prototype.followScroller = function(normalizedPosition){
     let { width: parentWidth } = this.parentBoundRect;
     this.x = normalizedPosition * (parentWidth - this.width);
-    this.domElem.style.transform = `translateX(${this.x}px)`;
+    this.domElem.style.transform = `translate(${this.x}px)`;
+}
+
+Entity.prototype.itemLocation = function(){
+    this.domElem.style.transform = `translate(${this.x}px, ${this.y}px)`
 }
 
 Entity.prototype.shootLaser = function(){
+    if(lasers.length !== 0) return
     const direction = this.className == 'spaceship' ? -1 : 1;
-    const laser = new Entity(playArea, laser);
+    const laser = new Entity(playArea, 'laser');
+    laser.domElem.classList.add('hide');
+    laser.shotBy = this;
+    laser.direction = direction;
+    const {cx, cy} = this.center;
+    laser.x = cx;
+    laser.y = this.y;
+    laser.itemLocation();
     lasers.push(laser);
+    laser.domElem.classList.remove('hide');
 }
 
 // using DOM getBoundClientRect update Entity's props
@@ -101,16 +116,25 @@ Entity.prototype.detectColission = function (other) {
     return colissionX && colissionY
 }
 
+// DOM elements
+header = document.querySelector('header')
+alienBlock = document.getElementById('alien-block');
+
 // spaceCraft and Alien
 let spaceCraft = new Entity(playArea, 'spaceship');
+spaceCraft.domElem.style.display = 'none';
 spaceCraft.domElem.classList.add('spaceship_position')
+spaceCraft.y = spaceCraft.parentBoundRect.y + spaceCraft.parentBoundRect.height;
+spaceCraft.domElem.removeAttribute('style');
 
 const aliens = [];
-for (let i = 0; i < 20; i++) {
-    let alien = new Entity(playArea, 'alien');
+for (let i = 0; i < 10; i++) {
+    let alien = new Entity(alienBlock, 'alien');
     aliens.push(alien);
-
 }
+
+// shooting event listener
+playArea.addEventListener('click', ()=> spaceCraft.shootLaser())
 
 // Stretch the window Hack
 let longElemHeight = 10000;
@@ -125,7 +149,6 @@ bottomDown.style.height = `${longElemHeight + window.innerHeight}px`;
 document.body.append(bottomDown);
 
 const bottomLimit = document.body.scrollHeight - topLimit;
-
 const motionRange = bottomLimit - topLimit;
 
 function scrollToLimit() {
@@ -141,17 +164,35 @@ function scrollToLimit() {
     spaceCraft.followScroller(normalizedPosition);
 }
 
+function lasersPositioning() {
+    if(lasers.length){
+        const laser = lasers[0];
+        console.log(laser.y)
+        laser.y += (100 * laser.direction)
+        if(laser.y  > `-${header.offsetHeight}` ){
+            laser.itemLocation();
+        }
+        else{
+            laser.domElem.remove();
+            lasers.pop()
+            delete(laser);            
+        }
+    }
+}
+
 // collision resolution
 // Colission Illustration, logic to run in gameloop
 function colissionResolution() {
     for (alien of aliens) {
         let alienColor = alien.domElem.style.backgroundColor; // alienColor allows to switch the color once after colission
-        if (spaceCraft.detectColission(alien)) {
+        hitLaser = lasers.length ? lasers[0].detectColission(alien) : false
+        if (spaceCraft.detectColission(alien) || hitLaser) {
 
-            if (alienColor !== 'yellow') alien.domElem.style.backgroundColor = 'yellow';
+            // if (alienColor !== 'yellow') alien.sprite.domElem.style.backgroundColor = 'yellow';
+            alien.domElem.remove();
         }
         else {
-            alien.domElem.style.backgroundColor = 'blue';
+            // alien.domElem.style.backgroundColor = 'blue';
         }
     }
 }
@@ -166,11 +207,11 @@ function gameLoop() {
     if (loopTimeout == null && !stopLoop) {
         scrollToLimit();
         loopTimeout = setTimeout(() => {
-
+            lasersPositioning();
             colissionResolution();
             gameLoop();
 
-        }, 33);
+        }, 18);
     }
 }
 

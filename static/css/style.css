@@ -1,5 +1,6 @@
 :root{
     --spaceship: white;
+    --alien1: cyan;
 }
 
 body {
@@ -7,6 +8,7 @@ body {
     height: '13300px impo !important';
     display: block;
     margin:0;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 #arcade{
@@ -23,6 +25,7 @@ body {
 header{
     grid-row: 1;
     background-color: seagreen;
+    text-align: center;
 }
 main{
     grid-row: 2;
@@ -31,8 +34,14 @@ main{
 }
 
 footer {
+    padding-top: 2rem;
     grid-row: 3;
-    background-color:yellowgreen
+    background-color:yellowgreen;
+    text-align: center;
+}
+
+footer button{
+    font-size: 1.5rem;
 }
 
 #play-area {
@@ -42,20 +51,45 @@ footer {
 }
 
 .entity {
-    width: 50px;
-    height: 50px;
     display: inline-flex;
-    flex-direction: column;
     font-size: .1em;
     transition: transform .1s linear;
     padding: 0;
     justify-content: center;
+    position: absolute;
 }
 
-.spaceship_position{
-    width: 2rem;
+#alien-block{
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-evenly;
+    width: 100%;
+    height: 50px;
+    
+}
+.alien{
+    position: relative;
+    display: block;
+    width: 3rem;
     height: 2rem;
-    position: absolute;
+    display: flex;
+    font-size: .25rem;
+}
+
+.spaceship{
+    width: 2rem;
+    height: 1rem;
     bottom: 25vh;
-    background: purple;
+    /* background: purple; */
+}
+
+.laser{
+    background: lime;
+    width: 2px;
+    height: 10px;
+    z-index: 100;
+}
+
+.hide{
+    display: none !important;
 }
