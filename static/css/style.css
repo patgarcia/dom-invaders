@@ -1,13 +1,14 @@
 :root{
     --spaceship: white;
     --alien1: cyan;
+    --explosion: cyan;
 }
 
 body {
     background-color: red;
-    height: '13300px impo !important';
     display: block;
     margin:0;
+    font-size: 3vw;
     font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -76,11 +77,24 @@ footer button{
     font-size: .25rem;
 }
 
+.explosion{
+    position: relative;
+    display: block;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: flex-start;
+    font-size: .1rem;
+    margin-top: -5px;
+    opacity: 1;
+    transition: opacity .2s;
+    transition-timing-function: step-end;
+}
+
 .spaceship{
     width: 2rem;
     height: 1rem;
     bottom: 25vh;
-    /* background: purple; */
 }
 
 .laser{

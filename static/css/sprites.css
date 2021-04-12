@@ -15,3 +15,11 @@
     align-self: center;
     justify-self: flex-end;
 }
+
+.explosion_sprite{
+    box-shadow: -12em 0em 0 var(--explosion), -11em -6em 0 var(--explosion), -11em 0em 0 var(--explosion), -10em -6em 0 var(--explosion), -10em 0em 0 var(--explosion), -10em 5em 0 var(--explosion), -10em 6em 0 var(--explosion), -9em 0em 0 var(--explosion), -8em -4em 0 var(--explosion), -8em 4em 0 var(--explosion), -6em -2em 0 var(--explosion), -6em 1em 0 var(--explosion), -6em 2em 0 var(--explosion), -5em -7em 0 var(--explosion), -5em 5em 0 var(--explosion), -4em -7em 0 var(--explosion), -4em 5em 0 var(--explosion), -3em -5em 0 var(--explosion), -3em 3em 0 var(--explosion), -2em -5em 0 var(--explosion), -2em 3em 0 var(--explosion), 1em -5em 0 var(--explosion), 1em 3em 0 var(--explosion), 2em -5em 0 var(--explosion), 2em 3em 0 var(--explosion), 3em -7em 0 var(--explosion), 3em -6em 0 var(--explosion), 3em 5em 0 var(--explosion), 4em -7em 0 var(--explosion), 4em 5em 0 var(--explosion), 5em -2em 0 var(--explosion), 5em 1em 0 var(--explosion), 5em 2em 0 var(--explosion), 7em -4em 0 var(--explosion), 7em 4em 0 var(--explosion), 8em -4em 0 var(--explosion), 8em 0em 0 var(--explosion), 9em -6em 0 var(--explosion), 9em 0em 0 var(--explosion), 9em 5em 0 var(--explosion), 9em 6em 0 var(--explosion), 10em -6em 0 var(--explosion), 10em 0em 0 var(--explosion), 10em 5em 0 var(--explosion), 10em 6em 0 var(--explosion), 11em 0em 0 var(--explosion);
+    background: rgba(1,1,1,0);
+    width: 1.2em;
+    height: 1.2em;
+    align-self: center;
+}
