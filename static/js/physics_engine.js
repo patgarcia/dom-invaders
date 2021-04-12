@@ -1,8 +1,49 @@
+/* 
+          00XXXX                        XXXX00        
+          00XXxx                        xxXX00        
+          ee0000eeeeRR            RReeee0000ee        
+                xxXX00            00XXxx              
+                XXXX00            00XXXX              
+            eexxXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxee        
+            00XXXXeeee00XXXXXXXXXXXX00eeeeXXXX00        
+        xxXXXXXXXX    00XXXXXXXXXXXX00    XXXXXXXXxx    
+        XXXXXXXXXX    00XXXXXXXXXXXX00    XXXXXXXXXX    
+    eeeeXXXXXXXXXXeeeeRRXXXXXXXXXXXXRReeeeXXXXXXXXXXeeee
+    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    XXXX""""RRXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXRR""""XXXX
+    XXXX    00XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX00    XXXX
+    XXXX    00XXXX""""""""""""""""""""""""XXXX00    XXXX
+    XXRR    00XXXX                        XXXX00    RRXX
+    eeXX    00xxxxRR000000ee    ee000000RRxxxx00    XXee
+                  xxXXXXXXxx    xxXXXXXXxx                            
+                  XXXXXXXXXX    XXXXXXXXXX              
+   ___  ____  __  ___  _____  ___   _____   ___  _______  ____
+  / _ \/ __ \/  |/  / /  _/ |/ / | / / _ | / _ \/ __/ _ \/ __/
+ / // / /_/ / /|_/ / _/ //    /| |/ / __ |/ // / _// , _/\ \  
+/____/\____/_/  /_/ /___/_/|_/ |___/_/ |_/____/___/_/|_/___/  
+                                                              
+Coded by Patricio Garcia | github.com/patgarcia/dom-invaders
+ */
+
 // play area
 let playArea = document.getElementById('play-area');
 
 // consts
 const lasers = [];
+
+// sound rel from index
+const soundDir = 'static/snd/'
+const shoot = "shoot.wav"
+const alienHit = "alien_hit.wav"
+
+// sound nodes
+const sounds = { shoot, alienHit }
+for(sound in sounds){
+    const soundNode = document.createElement('audio');
+    soundNode.src = soundDir + sounds[sound];
+    soundNode.preload = "auto";
+    sounds[sound] = soundNode;
+}
 
 // Entity Model
 class Entity {
@@ -69,17 +110,32 @@ Entity.prototype.itemLocation = function(){
 
 Entity.prototype.shootLaser = function(){
     if(lasers.length !== 0) return
-    const direction = this.className == 'spaceship' ? -1 : 1;
     const laser = new Entity(playArea, 'laser');
     laser.domElem.classList.add('hide');
     laser.shotBy = this;
-    laser.direction = direction;
-    const {cx, cy} = this.center;
-    laser.x = cx;
+    laser.direction = this.className == 'spaceship' ? -1 : 1;;
+    laser.x = this.center.cx;
     laser.y = this.y;
     laser.itemLocation();
     lasers.push(laser);
+    sounds.shoot.cloneNode().play();
     laser.domElem.classList.remove('hide');
+}
+
+Entity.prototype.removeLaser = function(){
+    this.domElem.remove();
+    lasers.pop();
+    delete(this); 
+}
+
+Entity.prototype.alienHit = function(){
+    sounds.alienHit.cloneNode().play();
+    this.domElem.classList.remove(this.className)
+    this.domElem.classList.add('explosion')
+    this.sprite.classList.add('explosion_sprite')
+    this.sprite.classList.remove(this.className + "_sprite")
+    this.domElem.style.opacity = 0;
+
 }
 
 // using DOM getBoundClientRect update Entity's props
@@ -167,8 +223,7 @@ function scrollToLimit() {
 function lasersPositioning() {
     if(lasers.length){
         const laser = lasers[0];
-        console.log(laser.y)
-        laser.y += (100 * laser.direction)
+        laser.y += (120 * laser.direction)
         if(laser.y  > `-${header.offsetHeight}` ){
             laser.itemLocation();
         }
@@ -183,13 +238,12 @@ function lasersPositioning() {
 // collision resolution
 // Colission Illustration, logic to run in gameloop
 function colissionResolution() {
-    for (alien of aliens) {
-        let alienColor = alien.domElem.style.backgroundColor; // alienColor allows to switch the color once after colission
+    for (const alien of aliens) {
         hitLaser = lasers.length ? lasers[0].detectColission(alien) : false
         if (spaceCraft.detectColission(alien) || hitLaser) {
 
-            // if (alienColor !== 'yellow') alien.sprite.domElem.style.backgroundColor = 'yellow';
-            alien.domElem.remove();
+            alien.alienHit();
+            if (hitLaser) lasers[0].removeLaser();
         }
         else {
             // alien.domElem.style.backgroundColor = 'blue';
@@ -211,7 +265,7 @@ function gameLoop() {
             colissionResolution();
             gameLoop();
 
-        }, 18);
+        }, 20);
     }
 }
 
