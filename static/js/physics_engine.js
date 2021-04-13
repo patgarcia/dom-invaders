@@ -291,13 +291,28 @@ function createAlienRow(AlienType){
 [Octopus, Crab, Squid].reverse().forEach( a => createAlienRow(a))
 
 // Get Alien Blocks
-const alienBlocks = Array.from(new Set(aliens.map(x => x.parentElem)));
+const alienBlocks = Array.from(new Set(aliens.slice().reverse().map(x => x.parentElem))); // reversed again for logic, in presentation we reversed it to show in proper order. TODO: check this and remove reversed instances
+
+// shared bounds object
+let alienBlocksBounds;
+function getAlienBlocksBounds(){
+    alienBlocksBounds = alienBlocks.map(b => b.getBoundingClientRect())
+    return alienBlocksBounds
+}
+
+// Calculate lowest point for each alienBlock
 function getAlienBlocksMinima() {
-    return alienBlocks
-        .map(b => b.getBoundingClientRect())
+    return getAlienBlocksBounds()
         .map(({ y, height }) => Number(y) + Number(height))
         .map((minima, i) => ({ [alienBlocks[i].id]: minima }))
         .reduce((acum, currentVal) => Object.assign(acum, currentVal), {})
+}
+
+// Alien Block Motion
+let blockIndex = 0;
+function moveBlock(){
+    let alienBlock = alienBlocks[blockIndex++]
+    alienBlock.style.transform = ''
 }
 
 // shooting event listener
