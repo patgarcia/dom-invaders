@@ -93,7 +93,7 @@ Entity.prototype.domInit = function () {
     this.domElem.classList.add(this.className);
     
     this.sprite = document.createElement('div');
-    this.sprite.classList.add(`${this.className}_sprite`);
+    this.sprite.classList.add(`${this.className}-sprite`);
     this.domElem.appendChild(this.sprite);
 
     // attach element to get computed properties
@@ -174,7 +174,7 @@ Spaceship.prototype.followScroller = function(normalizedPosition){
 Spaceship.prototype.shootLaser = function(){
     if(lasers.length !== 0) return
     sounds.shoot.cloneNode().play();
-    const laser = new Laser (playArea, 'laser');
+    const laser = new Laser (playArea);
     laser.domElem.classList.add('hide');
     laser.shotBy = this;
     laser.direction = this.className == 'spaceship' ? -1 : 1;
@@ -221,15 +221,18 @@ function getAlienBlocksMinima(){
     
 }
 class Alien extends Entity{
-    constructor(){
+    constructor(newBlock=false){
         super();
         this.parentElemName = this.className + '-block';
-        let parentElem = document.getElementById(this.parentElemName);
-        if(!parentElem){
+        let parentElem = document.getElementById(this.parentElemName); // check if parent already exists
+        if(!parentElem && !newBlock){
             let parent = document.createElement('div');
             parent.id = this.parentElemName;
             alienContainer.appendChild(parent);
             this.parentElem = parent;
+        }
+        else if(newBlock){
+            // write logic to handle more blocks of same alien
         }
         else{
             this.parentElem = parentElem;
@@ -243,11 +246,12 @@ Alien.prototype.alienHit = function(){
     sounds.alienHit.cloneNode().play();
     this.domElem.classList.remove(this.className)
     this.domElem.classList.add('explosion')
-    this.sprite.classList.add('explosion_sprite')
-    this.sprite.classList.remove(this.className + "_sprite")
+    this.sprite.classList.add('explosion-sprite')
+    this.sprite.classList.remove(this.className + "-sprite")
     this.domElem.style.opacity = 0;
     this.domElem.style.width = `${this.width}px`; // keep same distance between aliens
     this.domElem.style.height = `${this.height}px`;
+    this.domElem.style.setProperty('--explosion', `var(--${this.className})`)
     let hitIndex = aliens.indexOf(this);
     aliens = aliens.slice(0,hitIndex++).concat(aliens.slice(hitIndex)) // update array
 }
@@ -256,7 +260,6 @@ Alien.prototype.alienHit = function(){
 class Octopus extends Alien {}
 class Crab extends Alien {}
 class Squid extends Alien {}
-
 
 /*========== 
   DOM SETUP
@@ -276,6 +279,8 @@ spaceCraft.domElem.removeAttribute('style');
 let aliens = [];
 
 // Alien instantiation
+const alienPoints = {Octopus, Crab, Squid}
+
 function createAlienRow(AlienType){
     for (let i = 0; i < 11; i++) {
         let alien = new AlienType();
@@ -283,7 +288,7 @@ function createAlienRow(AlienType){
     }
 }
 
-[Alien, Octopus, Crab, Squid].reverse().forEach( a => createAlienRow(a))
+[Octopus, Crab, Squid].reverse().forEach( a => createAlienRow(a))
 
 // Get Alien Blocks
 const alienBlocks = Array.from(new Set(aliens.map(x => x.parentElem)));

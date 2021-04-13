@@ -1,6 +1,9 @@
 :root{
     --spaceship: white;
     --alien1: cyan;
+    --octopus: fuchsia;
+    --crab: lime;
+    --squid: yellow;
     --explosion: cyan;
 }
 
@@ -76,12 +79,8 @@ footer button{
     width: 3.5rem;
     height: 2rem;
     display: flex;
-    font-size: .25rem;
+    font-size: .12rem;
 }
-
-.octopus{background: red;}
-.crab {background: blue;}
-.squid {background: yellow;}
 
 .explosion{
     position: relative;
