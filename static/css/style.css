@@ -8,7 +8,6 @@ body {
     background-color: red;
     display: block;
     margin:0;
-    font-size: 3vw;
     font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -49,6 +48,7 @@ footer button{
     background-color: black;
     display: flex;
     width: 80%;
+    font-size: 3vw;
 }
 
 .entity {
@@ -60,22 +60,28 @@ footer button{
     position: absolute;
 }
 
-#alien-block{
-    margin-top: 30px;
+#alien-container{
+    width: 80%;
+}
+
+#alien-block, #octopus-block, #crab-block, #squid-block{
     display: flex;
     justify-content: space-evenly;
     width: 100%;
     height: 50px;
     
 }
-.alien{
+.alien, .octopus, .crab, .squid{
     position: relative;
-    display: block;
-    width: 3rem;
+    width: 3.5rem;
     height: 2rem;
     display: flex;
     font-size: .25rem;
 }
+
+.octopus{background: red;}
+.crab {background: blue;}
+.squid {background: yellow;}
 
 .explosion{
     position: relative;

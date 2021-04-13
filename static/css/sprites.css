@@ -7,7 +7,7 @@
     justify-self: flex-end;
 }
 
-.alien_sprite{
+.alien_sprite, .octopus_sprite, .crab_sprite, .squid_sprite{
     box-shadow: -6em -2em 0 var(--alien1), -6em -1em 0 var(--alien1), -6em 0em 0 var(--alien1), -5em -3em 0 var(--alien1), -5em -2em 0 var(--alien1), -5em -1em 0 var(--alien1), -5em 0em 0 var(--alien1), -4em -3em 0 var(--alien1), -4em -2em 0 var(--alien1), -4em -1em 0 var(--alien1), -4em 0em 0 var(--alien1), -4em 2em 0 var(--alien1), -3em -3em 0 var(--alien1), -3em -2em 0 var(--alien1), -3em 0em 0 var(--alien1), -3em 1em 0 var(--alien1), -3em 3em 0 var(--alien1), -2em -4em 0 var(--alien1), -2em -3em 0 var(--alien1), -2em -2em 0 var(--alien1), -2em 0em 0 var(--alien1), -2em 1em 0 var(--alien1), -1em -4em 0 var(--alien1), -1em -3em 0 var(--alien1), -1em -2em 0 var(--alien1), -1em -1em 0 var(--alien1), -1em 0em 0 var(--alien1), -1em 2em 0 var(--alien1), 0em -4em 0 var(--alien1), 0em -3em 0 var(--alien1), 0em -2em 0 var(--alien1), 0em -1em 0 var(--alien1), 0em 0em 0 var(--alien1), 0em 2em 0 var(--alien1), 1em -4em 0 var(--alien1), 1em -3em 0 var(--alien1), 1em -2em 0 var(--alien1), 1em 0em 0 var(--alien1), 1em 1em 0 var(--alien1), 2em -3em 0 var(--alien1), 2em -2em 0 var(--alien1), 2em 0em 0 var(--alien1), 2em 1em 0 var(--alien1), 2em 3em 0 var(--alien1), 3em -3em 0 var(--alien1), 3em -2em 0 var(--alien1), 3em -1em 0 var(--alien1), 3em 0em 0 var(--alien1), 3em 2em 0 var(--alien1), 4em -3em 0 var(--alien1), 4em -2em 0 var(--alien1), 4em -1em 0 var(--alien1), 4em 0em 0 var(--alien1), 5em -2em 0 var(--alien1), 5em -1em 0 var(--alien1), 5em 0em 0 var(--alien1);
     background: var(--alien1);
     width: 1.2em;
