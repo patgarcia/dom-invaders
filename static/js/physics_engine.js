@@ -49,7 +49,7 @@ for(sound in sounds){
   ENTITY MODEL
  =============*/
 class Entity {
-    constructor(parentElem) {
+    constructor(parentElem, className=null) {
         this.x;
         this.y;
         this.cx;
@@ -58,7 +58,7 @@ class Entity {
         this.height;
         this.domElem;
         this.sprite;
-        this.className = this.constructor.name.toLowerCase();
+        this.className = className || this.constructor.name.toLowerCase();
         this.parentElem = parentElem || null;
 
         if(parentElem) this.domInit();
@@ -217,25 +217,52 @@ Laser.prototype.removeLaser = function(){
 
 alienContainer = document.getElementById('alien-container');
 
-function getAlienBlocksMinima(){
+const alienRows = [];
+class AlienRow extends Entity{
     
+    get rowName(){
+        return this.className;
+    }
 }
+
+AlienRow.prototype.domInit = function () {
+    this.domElem = document.createElement('div');
+    this.domElem.classList.add(this.className);
+
+    // attach element to get computed properties
+    this.parentElem.appendChild(this.domElem);
+
+    // get DOM computed coordinates and dimensions
+    this.locationFromBoundingBoxes();
+
+    // Pre-compute Half width and height as well as cx and cy
+    this.calcHalvesAndCenters();
+}
+
+AlienRow.prototype.setWidthAndHeight = function(){
+    this.domElem.style.height = `${this.height}px`;
+    this.domElem.style.width = `${this.width}px`;
+}
+
+let aliensPerRow = 11;
 class Alien extends Entity{
-    constructor(newBlock=false){
+    constructor(){
         super();
-        this.parentElemName = this.className + '-block';
-        let parentElem = document.getElementById(this.parentElemName); // check if parent already exists
-        if(!parentElem && !newBlock){
-            let parent = document.createElement('div');
-            parent.id = this.parentElemName;
-            alienContainer.appendChild(parent);
+        let parentElemName = `${this.className}-block`;
+        let parentNodes = alienRows.map(row => row.rowName);
+        console.log(parentNodes);
+        let parentNode = alienRows[parentNodes.lastIndexOf(parentElemName)];
+        let parentLen = parentNode ? parentNode.domElem.children.length : null;
+        if(!parentNode || parentLen > aliensPerRow){
+            parentNode = new AlienRow(alienContainer, parentElemName);
+            alienRows.push(parentNode);
+            let parent = parentNode.domElem;            
             this.parentElem = parent;
+            this.parentNode = parentNode;
         }
-        else if(newBlock){
-            // write logic to handle more blocks of same alien
-        }
-        else{
-            this.parentElem = parentElem;
+        else {
+            this.parentElem = parentNode.domElem;
+            this.parentNode = parentNode;
         }
         this.domInit();
     }
@@ -281,22 +308,42 @@ let aliens = [];
 // Alien instantiation
 const alienPoints = {Octopus, Crab, Squid}
 
-function createAlienRow(AlienType){
-    for (let i = 0; i < 11; i++) {
-        let alien = new AlienType();
+let spaceBetweenAliens = 10;
+function createAlienRow(AlienType, row){
+    let alien;
+    for (let i = 0; i <= 11; i++) {
+        alien = new AlienType();
+        alien.x = alien.width * i + spaceBetweenAliens * i;
+        alien.y = 0;
+        alien.itemLocation();
         aliens.push(alien);
     }
+    let parentNode = alien.parentNode;
+    [parentNode.x, parentNode.y, parentNode.width, parentNode.height] = [ 0,  alien.width * row, alien.width * aliensPerRow, alien.width] // used alien width instead of height for gratuitous padding
+    parentNode.setWidthAndHeight();
+    parentNode.itemLocation();
 }
 
-[Octopus, Crab, Squid].reverse().forEach( a => createAlienRow(a))
+[Octopus, Octopus, Crab, Crab, Squid].reverse().forEach( 
+    (a, row) => {
+        createAlienRow(a, row);
+    });
+
+
+/* =========
+   MOVEMENT
+ ========== */
 
 // Get Alien Blocks
 const alienBlocks = Array.from(new Set(aliens.slice().reverse().map(x => x.parentElem))); // reversed again for logic, in presentation we reversed it to show in proper order. TODO: check this and remove reversed instances
 
-// shared bounds object
-let alienBlocksBounds;
+// shared bounds object 
+let sharedAlienBlocksBounds;
 function getAlienBlocksBounds(){
     alienBlocksBounds = alienBlocks.map(b => b.getBoundingClientRect())
+    sharedAlienBlocksBounds = alienBlocksBounds
+        .map((bound, i) => ({ [alienBlocks[i].id]: bound }))
+        .reduce((acum, currentVal) => Object.assign(acum, currentVal), {})
     return alienBlocksBounds
 }
 
@@ -306,13 +353,6 @@ function getAlienBlocksMinima() {
         .map(({ y, height }) => Number(y) + Number(height))
         .map((minima, i) => ({ [alienBlocks[i].id]: minima }))
         .reduce((acum, currentVal) => Object.assign(acum, currentVal), {})
-}
-
-// Alien Block Motion
-let blockIndex = 0;
-function moveBlock(){
-    let alienBlock = alienBlocks[blockIndex++]
-    alienBlock.style.transform = ''
 }
 
 // shooting event listener
@@ -344,6 +384,7 @@ function scrollToLimit() {
     let normalizedPosition = (scrollY - topLimit) / motionRange;
     spaceCraft.followScroller(normalizedPosition);
 }
+
 
 let laserSpeed = 40;
 function lasersPositioning() {
@@ -418,6 +459,13 @@ gameLoop();
 /*============= 
   HACKIE STUFF
  =============*/
+
+ // reset bounding box of aliens once DOM is loaded
+ window.onload = () => {
+    getAlienBlocksBounds();
+    aliens.forEach( alien => alien.locationFromBoundingBoxes())
+};
+
 
 // set the scroller to the middle of the page hack
 // browser remembers the scrolling position and goes to it
