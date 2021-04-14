@@ -25,6 +25,22 @@
 Coded by Patricio Garcia | github.com/patgarcia/dom-invaders
  */
 
+/*======
+  UTILS
+ ======*/
+
+ const range = (n, start = 0, step = 1) => {
+    return Object.keys(Array(n).fill())
+    .map((x) => Number(x))
+    .filter((x) => x + start < n)
+    .map((x) => x + start)
+    .filter((x, i) => !(i % step));
+}
+
+/*===========
+  GAME LOGIC
+ ===========*/
+
 // play area
 let playArea = document.getElementById('play-area');
 
@@ -250,10 +266,9 @@ class Alien extends Entity{
         super();
         let parentElemName = `${this.className}-block`;
         let parentNodes = alienRows.map(row => row.rowName);
-        console.log(parentNodes);
         let parentNode = alienRows[parentNodes.lastIndexOf(parentElemName)];
         let parentLen = parentNode ? parentNode.domElem.children.length : null;
-        if(!parentNode || parentLen > aliensPerRow){
+        if(!parentNode || parentLen >= aliensPerRow){
             parentNode = new AlienRow(alienContainer, parentElemName);
             alienRows.push(parentNode);
             let parent = parentNode.domElem;            
@@ -264,6 +279,11 @@ class Alien extends Entity{
             this.parentElem = parentNode.domElem;
             this.parentNode = parentNode;
         }
+        
+        this.alt = false;
+        this.altSpriteName = `${this.className}-alt-sprite`;
+        this.spriteName = `${this.className}-sprite`
+
         this.domInit();
     }
 }
@@ -311,9 +331,9 @@ const alienPoints = {Octopus, Crab, Squid}
 let spaceBetweenAliens = 10;
 function createAlienRow(AlienType, row){
     let alien;
-    for (let i = 0; i <= 11; i++) {
+    for (let i = 0; i <= 10; i++) {
         alien = new AlienType();
-        alien.x = alien.width * i + spaceBetweenAliens * i;
+        alien.x = (alien.width * i + spaceBetweenAliens * i) + 100; // offset of 100
         alien.y = 0;
         alien.itemLocation();
         aliens.push(alien);
@@ -355,9 +375,10 @@ function getAlienBlocksMinima() {
         .reduce((acum, currentVal) => Object.assign(acum, currentVal), {})
 }
 
-// shooting event listener
+// Shooting event listener
 playArea.addEventListener('click', () => spaceCraft.shootLaser())
 
+// spaceCraft controller 
 // Stretch the window Hack
 let longElemHeight = 10000;
 let topLimit = longElemHeight / 2.3;
@@ -385,7 +406,7 @@ function scrollToLimit() {
     spaceCraft.followScroller(normalizedPosition);
 }
 
-
+// Laser travel through screen
 let laserSpeed = 40;
 function lasersPositioning() {
     if(lasers.length){
@@ -403,6 +424,75 @@ function lasersPositioning() {
     }
 }
 
+// Alien block movement
+let playAreaLimitX = playArea.getBoundingClientRect().width;
+
+let moveAlienArray = aliens.slice().reverse();
+let moveAlienArraySwitch = (range(moveAlienArray.length, 0, 11)).map((n,i,a) => moveAlienArray.slice(n, n+11).reverse())
+moveAlienArraySwitch = moveAlienArraySwitch.reduce((a,i) => a.concat(i),[])
+let moveArray = moveAlienArray;
+
+let alienStep = 10;
+let alienDirection = 1;
+let directionSwitchingIndex;
+let alienIndex = 0;
+let stepDown = false;
+let stepDownCounter = 1;
+function moveAlien(alien){
+    function stepDownNow(){
+        for (let alienRow of alienRows){
+            alienRow.y += alien.height;
+        }
+        stepDownCounter++;
+    }
+    function switchDir(){
+        alienDirection *= -1;
+        directionSwitchingIndex = alienIndex - 1;
+        stepDown = !stepDown
+        stepDownNow();
+    }
+    if(alien.alt){
+        alien.sprite.className = '';
+        alien.sprite.classList.add(alien.altSpriteName);
+        
+    }
+    else{
+        alien.sprite.className = '';
+        alien.sprite.classList.add(alien.spriteName);
+        
+    }
+    alien.alt = !alien.alt;
+    if(alien.x + (alienStep * alienDirection) + alien.width > playAreaLimitX && alienDirection === 1){
+        switchDir();
+        moveArray = moveAlienArraySwitch;
+    }
+    else if(alien.x + (alienStep * alienDirection) < 0 && alienDirection === -1){
+        switchDir();
+        moveArray = moveAlienArray;
+    }
+    else{
+        // stopLoop = !stopLoop;
+    }
+    if(!stepDown){
+        alien.x += (alienStep * alienDirection);
+    }
+    else{
+        alienIndex = 0;
+        stepDown = !stepDown
+    }
+    
+    alien.itemLocation();
+    alien.parentNode.itemLocation();
+    
+}
+
+function moveAliens(){
+    let alien = moveArray[alienIndex];
+    alienIndex++;
+    alienIndex %= moveArray.length;
+    if(!alienIndex && alienStep < 80) alienStep++;
+    moveAlien(alien);
+}
 
 /*============ 
   GAME ENGINE
@@ -426,8 +516,10 @@ function colissionResolution() {
         hitCraft = shipInRange ? spaceCraft.detectColission(alien) : false;
 
         if (hitCraft || hitLaser) {
-            alien.alienHit();
             if (hitLaser) lasers[0].removeLaser();
+            alien.alienHit();
+            if (hitCraft) console.log('ship exploded')
+
         }
         else {
             // alien.domElem.style.backgroundColor = 'blue';
@@ -447,9 +539,10 @@ function gameLoop() {
         loopTimeout = setTimeout(() => {
             lasersPositioning();
             colissionResolution();
+            moveAliens();
             gameLoop();
 
-        }, 23);
+        }, 18);
     }
 }
 
@@ -463,7 +556,7 @@ gameLoop();
  // reset bounding box of aliens once DOM is loaded
  window.onload = () => {
     getAlienBlocksBounds();
-    aliens.forEach( alien => alien.locationFromBoundingBoxes())
+    aliens.forEach( alien => alien.locationFromBoundingBoxes());
 };
 
 

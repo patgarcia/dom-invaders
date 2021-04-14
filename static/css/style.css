@@ -52,6 +52,7 @@ footer button{
     display: flex;
     width: 80%;
     font-size: 3vw;
+    position:relative;
 }
 
 .entity {
@@ -65,6 +66,9 @@ footer button{
 
 #alien-container{
     position: relative;
+    width: 100%;
+    font-size: 3vw;
+    margin-top:35%;
 }
 
 .alien-block, .octopus-block, .crab-block, .squid-block{
@@ -98,7 +102,7 @@ footer button{
 .spaceship{
     width: 2rem;
     height: 1rem;
-    bottom: 25vh;
+    bottom: 2.5rem;
 }
 
 .laser{
