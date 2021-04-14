@@ -202,6 +202,15 @@ Spaceship.prototype.shootLaser = function(){
     lasers.push(laser);
     laser.domElem.classList.remove('hide');
 }
+Spaceship.prototype.detectColission = function(alien){
+    let overlapY = this.domElem.offsetTop > alien.parentNode.y;
+    let spaceCraftcenterX = spaceCraft.x - spaceCraft.width / 2;
+    let alienCenterX = alien.x - alien.width / 2
+    let dxBetweenEntitiesCXs = Math.abs(spaceCraftcenterX - alienCenterX);
+    let withBetweenCXs = spaceCraft.width / 2 + alien.width / 2;
+    let colissionX = (dxBetweenEntitiesCXs - withBetweenCXs) < 0;
+    return overlapY && colissionX
+}
 
 /*====== 
   LASER
