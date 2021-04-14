@@ -655,8 +655,6 @@ function gameLoop() {
     }
 }
 
-gameLoop();
-
 
 /*============= 
   HACKIE STUFF
@@ -665,6 +663,7 @@ gameLoop();
  // reset bounding box of aliens once DOM is loaded
  window.onload = () => {
     aliens.forEach( alien => alien.locationFromBoundingBoxes());
+    gameLoop();
     if(!playAgain) triggerModal(introWindow);
 };
 

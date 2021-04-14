@@ -133,6 +133,7 @@ footer h2 .spaceship{
 .footer-left{
     grid-column: 2;
     align-self: top;
+    font-size: 3vw;
 }
 .footer-right{
     grid-column: 3;
