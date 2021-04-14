@@ -13,7 +13,9 @@
 <body>
     <div id="arcade">
         <header>
-            <h1>Scroll wheel to move | Click to shoot</h1>
+           <h2 class="score score-left">SCORE-1 <br /> <span id="score1">00000</span></h2>
+           <h2 class="score score-center">TAITA <br /> <span id="highscore">05000</span></h2>
+           <h2 class="score score-right">SCORE-2 <br /> <span id="score2">00000</span></h2>
         </header>
         <main>
             <div id="play-area" >
@@ -21,8 +23,16 @@
             </div>
         </main>
         <footer>
-            <div id='inner-height'></div>
-            <button onclick="stopLoop = !stopLoop; if(!stopLoop) gameLoop()">Toggle Gameloop</button>
+            <h2 class="footer-left"><span>3</span>
+                <div class="spaceship" style="font-size: .1rem"><div class="spaceship-sprite"></div></div>
+                <div class="spaceship ship2" style="font-size: .1rem"><div class="spaceship-sprite"></div></div>
+            </h2>
+
+            <h2 class="footer-right">CREDIT<span>0</span></h2>
+            FOR MOBILE TESTING
+            <!-- <div id='inner-height'></div> -->
+            <!-- <button onclick="stopLoop = !stopLoop; if(!stopLoop) gameLoop()">Toggle Gameloop</button>  -->
+           
         </footer>
     </div>
 </body>

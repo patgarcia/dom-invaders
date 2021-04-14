@@ -1,3 +1,8 @@
+@font-face{
+    font-family:"Pixelar";
+    src:url("../fnt/1428314/4d8bd4f0-ce40-4f34-a0b8-49bc51024ea8.woff2") format("woff2"),url("../fnt/1428314/9c200a14-d264-405c-86bf-d27b840e86be.woff") format("woff");
+}
+
 :root{
     --spaceship: white;
     --alien1: cyan;
@@ -8,10 +13,10 @@
 }
 
 body {
-    background-color: red;
+    background-color: black;
     display: block;
     margin:0;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Pixelar, Helvetica, sans-serif;
 }
 
 #arcade{
@@ -20,15 +25,44 @@ body {
     grid-template: 10vh auto 20vh / 100%;
     width: 100vw;
     height: 100vh;
-    background-color: purple;
     top: 0;
     margin:0;
 }
 
 header{
     grid-row: 1;
-    background-color: seagreen;
     text-align: center;
+    display: grid;
+    grid-template: 1fr / 10% 1fr 1fr 1fr 10%;
+}
+.score{
+    font-size: 1.8rem;
+    line-height: 2rem;
+    letter-spacing: .2rem;
+    font-weight: 100;
+    margin: 0;
+    align-self: center;
+    justify-self: center;
+}
+.score span{
+    font-size: 2.2rem;
+    letter-spacing: .1rem;
+    color: white;
+}
+.score-left{
+    grid-column: 2;
+    color: cyan;
+}
+.score-center span{
+    color: lime;
+}
+.score-center{
+    grid-column: 3;
+    color: red
+}
+.score-right{
+    grid-column: 4;
+    color: yellow;
 }
 main{
     grid-row: 2;
@@ -37,10 +71,50 @@ main{
 }
 
 footer {
-    padding-top: 2rem;
     grid-row: 3;
-    background-color:yellowgreen;
     text-align: center;
+    display: grid;
+    grid-template: 1fr / 10% 1fr 1fr 10%;
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 100;
+}
+footer h2{
+    line-height: 1rem;
+    text-align: left;
+    --spaceship: cyan;
+}
+footer h2 span{
+    display: inline-block;
+    margin-right: 30px;
+    color: yellow;
+}
+footer h2 .spaceship{
+    display: inline-block;
+    margin-left: 10px;
+    
+}
+
+.footer-left{
+    grid-column: 2;
+    align-self: top;
+}
+.footer-right{
+    grid-column: 3;
+    text-align: right;
+}
+
+.footer-right{
+    display: inline-block;
+    margin-right: 30px;
+    color: magenta;
+    letter-spacing: .3rem;
+}
+.footer-right span{
+    display: inline-block;
+    margin-right: 30px;
+    color: cyan;
+    margin-left: 30px;
 }
 
 footer button{
@@ -68,7 +142,7 @@ footer button{
     position: relative;
     width: 100%;
     font-size: 3vw;
-    margin-top:35%;
+    border-bottom: 2px red solid;
 }
 
 .alien-block, .octopus-block, .crab-block, .squid-block{
