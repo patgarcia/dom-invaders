@@ -41,9 +41,6 @@ Coded by Patricio Garcia | github.com/patgarcia/dom-invaders
   GAME LOGIC
  ===========*/
 
-// URL
-let gameUrl = 'https://patgarcia.github.io/dom-invaders'
-
 // play area
 let playArea = document.getElementById('play-area');
 
@@ -563,7 +560,7 @@ overTitle.innerHTML = '<span>GAME OVER</span>';
 let overButton = document.createElement('button');
 overButton.innerText = 'Try Again';
 overButton.addEventListener('click', () => {
-    location.href = gameUrl + '?continue=true';
+    location.href = '?continue=true';
 })
 overWindow.appendChild(overTitle);
 overWindow.appendChild(overButton);
@@ -579,7 +576,7 @@ winP.innerText = `Your score: \n ${ score1.innerText }`
 let winButton = document.createElement('button');
 winButton.innerText = 'Do it again!';
 winButton.addEventListener('click', () => {
-    location.href = gameUrl + '?continue=true';
+    location.href = '?continue=true';
 })
 winWindow.appendChild(winTitle);
 winWindow.appendChild(winP);
