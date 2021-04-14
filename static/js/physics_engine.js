@@ -124,7 +124,7 @@ Entity.prototype.domInit = function () {
 
 Entity.prototype.locationFromBoundingBoxes = function(){
     // instantiate object with bounding boxes
-    let { x: parentX, y: parentY } = this.parentBoundRect;
+    let { x:parentX, y:parentY } = this.parentBoundRect;
     let { x, y, width, height } = this.boundRect;
     [this.x, this.y, this.width, this.height] = [x - parentX, y - parentY, width, height];
 }
@@ -232,6 +232,7 @@ Laser.prototype.removeLaser = function(){
  ======*/
 
 alienContainer = document.getElementById('alien-container');
+const alienPoints = { octopus: 10, crab: 20, squid: 30 }
 
 const alienRows = [];
 class AlienRow extends Entity{
@@ -290,6 +291,7 @@ class Alien extends Entity{
 
 // For Alien only
 Alien.prototype.alienHit = function(){
+    updateScore(score1, alienPoints[this.className])
     sounds.alienHit.cloneNode().play();
     this.domElem.classList.remove(this.className)
     this.domElem.classList.add('explosion')
@@ -304,16 +306,19 @@ Alien.prototype.alienHit = function(){
 }
 
 // Alien types
-class Octopus extends Alien {}
-class Crab extends Alien {}
-class Squid extends Alien {}
+class Octopus extends Alien { }
+class Crab extends Alien { }
+class Squid extends Alien { }
 
 /*========== 
   DOM SETUP
  ==========*/
 
 // DOM elements
-header = document.querySelector('header')
+let header = document.querySelector('header');
+let score1 = document.getElementById('score1');
+let score2 = document.getElementById('score2');
+let highScore = document.getElementById('highScore');
 
 // spaceCraft instantiation
 let spaceCraft = new Spaceship(playArea);
@@ -321,14 +326,14 @@ spaceCraft.domElem.style.display = 'none';
 spaceCraft.domElem.classList.add('spaceship_position')
 spaceCraft.y = spaceCraft.parentBoundRect.y + spaceCraft.parentBoundRect.height;
 spaceCraft.domElem.removeAttribute('style');
+spaceCraft.locationFromBoundingBoxes();
 
 // Alien Container
 let aliens = [];
 
 // Alien instantiation
-const alienPoints = {Octopus, Crab, Squid}
-
 let spaceBetweenAliens = 10;
+let yOffset = alienContainer.getBoundingClientRect().height * .30   ;
 function createAlienRow(AlienType, row){
     let alien;
     for (let i = 0; i <= 10; i++) {
@@ -339,7 +344,7 @@ function createAlienRow(AlienType, row){
         aliens.push(alien);
     }
     let parentNode = alien.parentNode;
-    [parentNode.x, parentNode.y, parentNode.width, parentNode.height] = [ 0,  alien.width * row, alien.width * aliensPerRow, alien.width] // used alien width instead of height for gratuitous padding
+    [parentNode.x, parentNode.y, parentNode.width, parentNode.height] = [ 0,  alien.width * row + yOffset, alien.width * aliensPerRow, alien.width] // used alien width instead of height for gratuitous padding
     parentNode.setWidthAndHeight();
     parentNode.itemLocation();
 }
@@ -354,25 +359,9 @@ function createAlienRow(AlienType, row){
    MOVEMENT
  ========== */
 
-// Get Alien Blocks
-const alienBlocks = Array.from(new Set(aliens.slice().reverse().map(x => x.parentElem))); // reversed again for logic, in presentation we reversed it to show in proper order. TODO: check this and remove reversed instances
-
-// shared bounds object 
-let sharedAlienBlocksBounds;
-function getAlienBlocksBounds(){
-    alienBlocksBounds = alienBlocks.map(b => b.getBoundingClientRect())
-    sharedAlienBlocksBounds = alienBlocksBounds
-        .map((bound, i) => ({ [alienBlocks[i].id]: bound }))
-        .reduce((acum, currentVal) => Object.assign(acum, currentVal), {})
-    return alienBlocksBounds
-}
-
 // Calculate lowest point for each alienBlock
 function getAlienBlocksMinima() {
-    return getAlienBlocksBounds()
-        .map(({ y, height }) => Number(y) + Number(height))
-        .map((minima, i) => ({ [alienBlocks[i].id]: minima }))
-        .reduce((acum, currentVal) => Object.assign(acum, currentVal), {})
+    return alienRows.sort((a,b) => b.y - a.y)[0].y
 }
 
 // Shooting event listener
@@ -427,10 +416,17 @@ function lasersPositioning() {
 // Alien block movement
 let playAreaLimitX = playArea.getBoundingClientRect().width;
 
-let moveAlienArray = aliens.slice().reverse();
-let moveAlienArraySwitch = (range(moveAlienArray.length, 0, 11)).map((n,i,a) => moveAlienArray.slice(n, n+11).reverse())
-moveAlienArraySwitch = moveAlienArraySwitch.reduce((a,i) => a.concat(i),[])
-let moveArray = moveAlienArray;
+let moveAlienArray;
+let moveAlienArraySwitch;
+let moveArray;
+
+function updateArrays(){
+    moveAlienArray = aliens.slice().reverse();
+    moveAlienArraySwitch = (range(moveAlienArray.length, 0, 11)).map((n,i,a) => moveAlienArray.slice(n, n+11).reverse())
+    moveAlienArraySwitch = moveAlienArraySwitch.reduce((a,i) => a.concat(i),[])
+    moveArray = moveAlienArray;
+}
+updateArrays();
 
 let alienStep = 10;
 let alienDirection = 1;
@@ -490,9 +486,17 @@ function moveAliens(){
     let alien = moveArray[alienIndex];
     alienIndex++;
     alienIndex %= moveArray.length;
-    if(!alienIndex && alienStep < 80) alienStep++;
+    if(!alienIndex && alienStep < 50) alienStep++;
     moveAlien(alien);
 }
+
+/*===
+  UI
+ ===*/
+function updateScore(score, amount){
+    score.innerText = `${Number(score.innerText) + amount}`.padStart(5,0);
+}
+
 
 /*============ 
   GAME ENGINE
@@ -500,25 +504,24 @@ function moveAliens(){
 
 // Collision resolution
 function colissionResolution() {
-    const BlocksMinima = getAlienBlocksMinima();
-    const absMinima = Math.min(...Object.values(BlocksMinima));
+    const absMinima = getAlienBlocksMinima();
     const shipInRange = spaceCraft.overlapInY(absMinima);
     const laserInRange = lasers.length ? lasers[0].overlapInY(absMinima) : false;
     if(!shipInRange && !laserInRange) return
 
     for (const alien of aliens.slice().reverse()) {
-        const blockMinima = BlocksMinima[alien.parentElem.id]
+        const blockMinima = alien.parentNode.y + alien.parentNode.height;
         const shipInRange = spaceCraft.overlapInY(blockMinima);
         const laserInRange = lasers.length ? lasers[0].overlapInY(blockMinima) : false;
-    
 
         hitLaser = laserInRange ? lasers[0].detectColission(alien) : false;
         hitCraft = shipInRange ? spaceCraft.detectColission(alien) : false;
 
         if (hitCraft || hitLaser) {
             if (hitLaser) lasers[0].removeLaser();
+            if (hitCraft) alert('ship exploded')
             alien.alienHit();
-            if (hitCraft) console.log('ship exploded')
+            
 
         }
         else {
@@ -542,7 +545,7 @@ function gameLoop() {
             moveAliens();
             gameLoop();
 
-        }, 18);
+        }, 23);
     }
 }
 
@@ -555,7 +558,6 @@ gameLoop();
 
  // reset bounding box of aliens once DOM is loaded
  window.onload = () => {
-    getAlienBlocksBounds();
     aliens.forEach( alien => alien.locationFromBoundingBoxes());
 };
 
@@ -565,7 +567,8 @@ gameLoop();
 setTimeout(() => scrollTo(0, document.body.scrollHeight / 2), 600)
 
 
-//on window resize get innerHeight in the footer
-let heightPrompt = document.getElementById('inner-height');
+// on window resize get innerHeight in the footer
+// use this for mobile device exploration
+/* let heightPrompt = document.getElementById('inner-height');
 heightPrompt.style.fontSize = '3rem';
-addEventListener('resize', () => heightPrompt.innerText =  `Height: ${window.innerHeight} Touch points: ${navigator.maxTouchPoints}`)
+addEventListener('resize', () => heightPrompt.innerText =  `Height: ${window.innerHeight} Touch points: ${navigator.maxTouchPoints}`) */
