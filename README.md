@@ -19,10 +19,10 @@ No installation required.
 
 ## Future work
 Coming features:
-    * Splash Screen
-    * Alternate Player functionaly
-    * Highscore registration
-    * Leaderboard
-    * Aliens to shoot back
-    * Protective barriers
-    * Responsive design
+* Splash Screen
+* Alternate Player functionaly
+* Highscore registration
+* Leaderboard
+* Aliens to shoot back
+* Protective barriers
+* Responsive design
