@@ -497,6 +497,42 @@ function updateScore(score, amount){
     score.innerText = `${Number(score.innerText) + amount}`.padStart(5,0);
 }
 
+// Modal
+let modal = document.getElementById('modal');
+modal.classList.add('hide');
+function toggleModal(){
+    if(modal.classList.contains('hide')){
+        modal.className = '';
+    }
+    else{
+        modal.classList.add('hide')
+    }
+}
+
+// Game Intro
+let introWindow = document.createElement('div');
+introWindow.id = 'intro';
+let introTitle = document.createElement('h1');
+introTitle.innerHTML = "<span>DOM</span> INVADERS";
+let introButton = document.createElement('button');
+introButton.innerText = "Start Playing";
+introButton.addEventListener('click', () => {
+    stopLoop = !stopLoop; 
+    if(!stopLoop) gameLoop();
+    toggleModal();
+})
+let introP = document.createElement('p');
+introP.innerText = "Mouse wheel scroll controls the ship and click above red line to shoot"
+introWindow.appendChild(introTitle);
+introWindow.appendChild(introButton);
+introWindow.appendChild(introP);
+function triggerModal(elem){
+    stopLoop = !stopLoop;
+    modal.innerHTML = '';
+    modal.appendChild(elem);
+    toggleModal();
+}
+
 
 /*============ 
   GAME ENGINE
@@ -559,6 +595,7 @@ gameLoop();
  // reset bounding box of aliens once DOM is loaded
  window.onload = () => {
     aliens.forEach( alien => alien.locationFromBoundingBoxes());
+    triggerModal(introWindow);
 };
 
 
