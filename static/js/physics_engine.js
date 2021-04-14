@@ -25,6 +25,22 @@
 Coded by Patricio Garcia | github.com/patgarcia/dom-invaders
  */
 
+/*======
+  UTILS
+ ======*/
+
+ const range = (n, start = 0, step = 1) => {
+    return Object.keys(Array(n).fill())
+    .map((x) => Number(x))
+    .filter((x) => x + start < n)
+    .map((x) => x + start)
+    .filter((x, i) => !(i % step));
+}
+
+/*===========
+  GAME LOGIC
+ ===========*/
+
 // play area
 let playArea = document.getElementById('play-area');
 
@@ -49,7 +65,7 @@ for(sound in sounds){
   ENTITY MODEL
  =============*/
 class Entity {
-    constructor(parentElem) {
+    constructor(parentElem, className=null) {
         this.x;
         this.y;
         this.cx;
@@ -58,7 +74,7 @@ class Entity {
         this.height;
         this.domElem;
         this.sprite;
-        this.className = this.constructor.name.toLowerCase();
+        this.className = className || this.constructor.name.toLowerCase();
         this.parentElem = parentElem || null;
 
         if(parentElem) this.domInit();
@@ -217,26 +233,57 @@ Laser.prototype.removeLaser = function(){
 
 alienContainer = document.getElementById('alien-container');
 
-function getAlienBlocksMinima(){
+const alienRows = [];
+class AlienRow extends Entity{
     
+    get rowName(){
+        return this.className;
+    }
 }
+
+AlienRow.prototype.domInit = function () {
+    this.domElem = document.createElement('div');
+    this.domElem.classList.add(this.className);
+
+    // attach element to get computed properties
+    this.parentElem.appendChild(this.domElem);
+
+    // get DOM computed coordinates and dimensions
+    this.locationFromBoundingBoxes();
+
+    // Pre-compute Half width and height as well as cx and cy
+    this.calcHalvesAndCenters();
+}
+
+AlienRow.prototype.setWidthAndHeight = function(){
+    this.domElem.style.height = `${this.height}px`;
+    this.domElem.style.width = `${this.width}px`;
+}
+
+let aliensPerRow = 11;
 class Alien extends Entity{
-    constructor(newBlock=false){
+    constructor(){
         super();
-        this.parentElemName = this.className + '-block';
-        let parentElem = document.getElementById(this.parentElemName); // check if parent already exists
-        if(!parentElem && !newBlock){
-            let parent = document.createElement('div');
-            parent.id = this.parentElemName;
-            alienContainer.appendChild(parent);
+        let parentElemName = `${this.className}-block`;
+        let parentNodes = alienRows.map(row => row.rowName);
+        let parentNode = alienRows[parentNodes.lastIndexOf(parentElemName)];
+        let parentLen = parentNode ? parentNode.domElem.children.length : null;
+        if(!parentNode || parentLen >= aliensPerRow){
+            parentNode = new AlienRow(alienContainer, parentElemName);
+            alienRows.push(parentNode);
+            let parent = parentNode.domElem;            
             this.parentElem = parent;
+            this.parentNode = parentNode;
         }
-        else if(newBlock){
-            // write logic to handle more blocks of same alien
+        else {
+            this.parentElem = parentNode.domElem;
+            this.parentNode = parentNode;
         }
-        else{
-            this.parentElem = parentElem;
-        }
+        
+        this.alt = false;
+        this.altSpriteName = `${this.className}-alt-sprite`;
+        this.spriteName = `${this.className}-sprite`
+
         this.domInit();
     }
 }
@@ -281,28 +328,57 @@ let aliens = [];
 // Alien instantiation
 const alienPoints = {Octopus, Crab, Squid}
 
-function createAlienRow(AlienType){
-    for (let i = 0; i < 11; i++) {
-        let alien = new AlienType();
+let spaceBetweenAliens = 10;
+function createAlienRow(AlienType, row){
+    let alien;
+    for (let i = 0; i <= 10; i++) {
+        alien = new AlienType();
+        alien.x = (alien.width * i + spaceBetweenAliens * i) + 100; // offset of 100
+        alien.y = 0;
+        alien.itemLocation();
         aliens.push(alien);
     }
+    let parentNode = alien.parentNode;
+    [parentNode.x, parentNode.y, parentNode.width, parentNode.height] = [ 0,  alien.width * row, alien.width * aliensPerRow, alien.width] // used alien width instead of height for gratuitous padding
+    parentNode.setWidthAndHeight();
+    parentNode.itemLocation();
 }
 
-[Octopus, Crab, Squid].reverse().forEach( a => createAlienRow(a))
+[Octopus, Octopus, Crab, Crab, Squid].reverse().forEach( 
+    (a, row) => {
+        createAlienRow(a, row);
+    });
+
+
+/* =========
+   MOVEMENT
+ ========== */
 
 // Get Alien Blocks
-const alienBlocks = Array.from(new Set(aliens.map(x => x.parentElem)));
+const alienBlocks = Array.from(new Set(aliens.slice().reverse().map(x => x.parentElem))); // reversed again for logic, in presentation we reversed it to show in proper order. TODO: check this and remove reversed instances
+
+// shared bounds object 
+let sharedAlienBlocksBounds;
+function getAlienBlocksBounds(){
+    alienBlocksBounds = alienBlocks.map(b => b.getBoundingClientRect())
+    sharedAlienBlocksBounds = alienBlocksBounds
+        .map((bound, i) => ({ [alienBlocks[i].id]: bound }))
+        .reduce((acum, currentVal) => Object.assign(acum, currentVal), {})
+    return alienBlocksBounds
+}
+
+// Calculate lowest point for each alienBlock
 function getAlienBlocksMinima() {
-    return alienBlocks
-        .map(b => b.getBoundingClientRect())
+    return getAlienBlocksBounds()
         .map(({ y, height }) => Number(y) + Number(height))
         .map((minima, i) => ({ [alienBlocks[i].id]: minima }))
         .reduce((acum, currentVal) => Object.assign(acum, currentVal), {})
 }
 
-// shooting event listener
+// Shooting event listener
 playArea.addEventListener('click', () => spaceCraft.shootLaser())
 
+// spaceCraft controller 
 // Stretch the window Hack
 let longElemHeight = 10000;
 let topLimit = longElemHeight / 2.3;
@@ -330,6 +406,7 @@ function scrollToLimit() {
     spaceCraft.followScroller(normalizedPosition);
 }
 
+// Laser travel through screen
 let laserSpeed = 40;
 function lasersPositioning() {
     if(lasers.length){
@@ -347,6 +424,75 @@ function lasersPositioning() {
     }
 }
 
+// Alien block movement
+let playAreaLimitX = playArea.getBoundingClientRect().width;
+
+let moveAlienArray = aliens.slice().reverse();
+let moveAlienArraySwitch = (range(moveAlienArray.length, 0, 11)).map((n,i,a) => moveAlienArray.slice(n, n+11).reverse())
+moveAlienArraySwitch = moveAlienArraySwitch.reduce((a,i) => a.concat(i),[])
+let moveArray = moveAlienArray;
+
+let alienStep = 10;
+let alienDirection = 1;
+let directionSwitchingIndex;
+let alienIndex = 0;
+let stepDown = false;
+let stepDownCounter = 1;
+function moveAlien(alien){
+    function stepDownNow(){
+        for (let alienRow of alienRows){
+            alienRow.y += alien.height;
+        }
+        stepDownCounter++;
+    }
+    function switchDir(){
+        alienDirection *= -1;
+        directionSwitchingIndex = alienIndex - 1;
+        stepDown = !stepDown
+        stepDownNow();
+    }
+    if(alien.alt){
+        alien.sprite.className = '';
+        alien.sprite.classList.add(alien.altSpriteName);
+        
+    }
+    else{
+        alien.sprite.className = '';
+        alien.sprite.classList.add(alien.spriteName);
+        
+    }
+    alien.alt = !alien.alt;
+    if(alien.x + (alienStep * alienDirection) + alien.width > playAreaLimitX && alienDirection === 1){
+        switchDir();
+        moveArray = moveAlienArraySwitch;
+    }
+    else if(alien.x + (alienStep * alienDirection) < 0 && alienDirection === -1){
+        switchDir();
+        moveArray = moveAlienArray;
+    }
+    else{
+        // stopLoop = !stopLoop;
+    }
+    if(!stepDown){
+        alien.x += (alienStep * alienDirection);
+    }
+    else{
+        alienIndex = 0;
+        stepDown = !stepDown
+    }
+    
+    alien.itemLocation();
+    alien.parentNode.itemLocation();
+    
+}
+
+function moveAliens(){
+    let alien = moveArray[alienIndex];
+    alienIndex++;
+    alienIndex %= moveArray.length;
+    if(!alienIndex && alienStep < 80) alienStep++;
+    moveAlien(alien);
+}
 
 /*============ 
   GAME ENGINE
@@ -370,8 +516,10 @@ function colissionResolution() {
         hitCraft = shipInRange ? spaceCraft.detectColission(alien) : false;
 
         if (hitCraft || hitLaser) {
-            alien.alienHit();
             if (hitLaser) lasers[0].removeLaser();
+            alien.alienHit();
+            if (hitCraft) console.log('ship exploded')
+
         }
         else {
             // alien.domElem.style.backgroundColor = 'blue';
@@ -391,9 +539,10 @@ function gameLoop() {
         loopTimeout = setTimeout(() => {
             lasersPositioning();
             colissionResolution();
+            moveAliens();
             gameLoop();
 
-        }, 23);
+        }, 18);
     }
 }
 
@@ -403,6 +552,13 @@ gameLoop();
 /*============= 
   HACKIE STUFF
  =============*/
+
+ // reset bounding box of aliens once DOM is loaded
+ window.onload = () => {
+    getAlienBlocksBounds();
+    aliens.forEach( alien => alien.locationFromBoundingBoxes());
+};
+
 
 // set the scroller to the middle of the page hack
 // browser remembers the scrolling position and goes to it

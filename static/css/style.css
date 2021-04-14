@@ -52,6 +52,7 @@ footer button{
     display: flex;
     width: 80%;
     font-size: 3vw;
+    position:relative;
 }
 
 .entity {
@@ -64,26 +65,28 @@ footer button{
 }
 
 #alien-container{
-    width: 80%;
+    position: relative;
+    width: 100%;
+    font-size: 3vw;
+    margin-top:35%;
 }
 
-#alien-block, #octopus-block, #crab-block, #squid-block{
-    display: flex;
-    justify-content: space-evenly;
+.alien-block, .octopus-block, .crab-block, .squid-block{
+    position: absolute;
     width: 100%;
-    height: 50px;
-    
+    padding: 0;
+    margin: 0;
 }
 .alien, .octopus, .crab, .squid{
-    position: relative;
-    width: 3.5rem;
-    height: 2rem;
+    position: absolute;
+    width: 2.6rem;
+    height: 1rem;
     display: flex;
-    font-size: .12rem;
+    font-size: .1rem;
 }
 
 .explosion{
-    position: relative;
+    position: absolute;
     display: block;
     width: 3rem;
     height: 3rem;
@@ -99,7 +102,7 @@ footer button{
 .spaceship{
     width: 2rem;
     height: 1rem;
-    bottom: 25vh;
+    bottom: 2.5rem;
 }
 
 .laser{
