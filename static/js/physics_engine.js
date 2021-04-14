@@ -41,6 +41,9 @@ Coded by Patricio Garcia | github.com/patgarcia/dom-invaders
   GAME LOGIC
  ===========*/
 
+// URL
+let gameUrl = 'https://patgarcia.github.io/dom-invaders'
+
 // play area
 let playArea = document.getElementById('play-area');
 
@@ -59,7 +62,7 @@ const sounds = { shoot, alienHit, explosion }
 for(sound in sounds){
     const soundNode = document.createElement('audio');
     soundNode.src = soundDir + sounds[sound];
-    soundNode.preload = "auto";
+    soundNode.preload = 'auto';
     sounds[sound] = soundNode;
 }
 
@@ -312,7 +315,7 @@ Alien.prototype.alienHit = function(){
     this.domElem.classList.remove(this.className)
     this.domElem.classList.add('explosion')
     this.sprite.classList.add('explosion-sprite')
-    this.sprite.classList.remove(this.className + "-sprite")
+    this.sprite.classList.remove(this.className + '-sprite')
     this.domElem.style.opacity = 0;
     this.domElem.style.width = `${this.width}px`; // keep same distance between aliens
     this.domElem.style.height = `${this.height}px`;
@@ -333,7 +336,6 @@ class Squid extends Alien { }
 // query parameters
 const queryParams = new URLSearchParams(window.location.search);
 const playAgain = queryParams.get('continue');
-console.log(playAgain);
 
 // DOM elements
 let header = document.querySelector('header');
@@ -533,16 +535,16 @@ function toggleModal(){
 let introWindow = document.createElement('div');
 introWindow.id = 'intro';
 let introTitle = document.createElement('h1');
-introTitle.innerHTML = "<span>DOM</span> INVADERS";
+introTitle.innerHTML = '<span>DOM</span> INVADERS';
 let introButton = document.createElement('button');
-introButton.innerText = "Start Playing";
+introButton.innerText = 'Start Playing';
 introButton.addEventListener('click', () => {
     stopLoop = !stopLoop; 
     if(!stopLoop) gameLoop();
     toggleModal();
 })
 let introP = document.createElement('p');
-introP.innerText = "Mouse wheel scroll controls the ship and click above red line to shoot"
+introP.innerText = 'Mouse wheel scroll controls the ship and click above red line to shoot'
 introWindow.appendChild(introTitle);
 introWindow.appendChild(introButton);
 introWindow.appendChild(introP);
@@ -557,11 +559,11 @@ function triggerModal(elem){
 let overWindow = document.createElement('div');
 overWindow.id = 'gameover';
 let overTitle = document.createElement('h1');
-overTitle.innerHTML = "<span>GAME OVER</span>";
+overTitle.innerHTML = '<span>GAME OVER</span>';
 let overButton = document.createElement('button');
-overButton.innerText = "Try Again";
+overButton.innerText = 'Try Again';
 overButton.addEventListener('click', () => {
-    location.href = "?continue=true";
+    location.href = gameUrl + '?continue=true';
 })
 overWindow.appendChild(overTitle);
 overWindow.appendChild(overButton);
@@ -571,13 +573,13 @@ overWindow.appendChild(overButton);
 let winWindow = document.createElement('div');
 winWindow.id = 'won';
 let winTitle = document.createElement('h1');
-winTitle.innerHTML = "<span>YOU WIN!</span>";
+winTitle.innerHTML = '<span>YOU WIN!</span>';
 let winP = document.createElement('p');
 winP.innerText = `Your score: \n ${ score1.innerText }`
 let winButton = document.createElement('button');
-winButton.innerText = "Do it again!";
+winButton.innerText = 'Do it again!';
 winButton.addEventListener('click', () => {
-    location.href = "?continue=true";
+    location.href = gameUrl + '?continue=true';
 })
 winWindow.appendChild(winTitle);
 winWindow.appendChild(winP);
