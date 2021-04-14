@@ -46,14 +46,16 @@ let playArea = document.getElementById('play-area');
 
 // consts
 const lasers = [];
+let lives = 0;
 
 // sound rel from index
-const soundDir = 'static/snd/'
-const shoot = "shoot.wav"
-const alienHit = "alien_hit.wav"
+const soundDir = 'static/snd/';
+const shoot = 'shoot.wav';
+const alienHit = 'alien_hit.wav';
+const explosion = 'explosion.wav';
 
 // sound nodes
-const sounds = { shoot, alienHit }
+const sounds = { shoot, alienHit, explosion }
 for(sound in sounds){
     const soundNode = document.createElement('audio');
     soundNode.src = soundDir + sounds[sound];
@@ -202,10 +204,15 @@ Spaceship.prototype.shootLaser = function(){
     lasers.push(laser);
     laser.domElem.classList.remove('hide');
 }
+
+Spaceship.prototype.overlapInY = function(minima){
+    return (this.domElem.offsetTop - 25) < minima
+}
+
 Spaceship.prototype.detectColission = function(alien){
-    let overlapY = this.domElem.offsetTop > alien.parentNode.y;
+    let overlapY = (this.domElem.offsetTop - 25) < alien.parentNode.y;
     let spaceCraftcenterX = spaceCraft.x - spaceCraft.width / 2;
-    let alienCenterX = alien.x - alien.width / 2
+    let alienCenterX = alien.x - alien.width / 2;
     let dxBetweenEntitiesCXs = Math.abs(spaceCraftcenterX - alienCenterX);
     let withBetweenCXs = spaceCraft.width / 2 + alien.width / 2;
     let colissionX = (dxBetweenEntitiesCXs - withBetweenCXs) < 0;
@@ -323,11 +330,18 @@ class Squid extends Alien { }
   DOM SETUP
  ==========*/
 
+// query parameters
+const queryParams = new URLSearchParams(window.location.search);
+const playAgain = queryParams.get('continue');
+console.log(playAgain);
+
 // DOM elements
 let header = document.querySelector('header');
 let score1 = document.getElementById('score1');
 let score2 = document.getElementById('score2');
 let highScore = document.getElementById('highScore');
+let footer = document.querySelector('footer');
+let livesElem = document.querySelector('.footer-left').querySelector('span');
 
 // spaceCraft instantiation
 let spaceCraft = new Spaceship(playArea);
@@ -475,9 +489,6 @@ function moveAlien(alien){
         switchDir();
         moveArray = moveAlienArray;
     }
-    else{
-        // stopLoop = !stopLoop;
-    }
     if(!stepDown){
         alien.x += (alienStep * alienDirection);
     }
@@ -495,7 +506,7 @@ function moveAliens(){
     let alien = moveArray[alienIndex];
     alienIndex++;
     alienIndex %= moveArray.length;
-    if(!alienIndex && alienStep < 50) alienStep++;
+    if(!alienIndex && alienStep < 70) alienStep++;
     moveAlien(alien);
 }
 
@@ -542,10 +553,61 @@ function triggerModal(elem){
     toggleModal();
 }
 
+// GameOver
+let overWindow = document.createElement('div');
+overWindow.id = 'gameover';
+let overTitle = document.createElement('h1');
+overTitle.innerHTML = "<span>GAME OVER</span>";
+let overButton = document.createElement('button');
+overButton.innerText = "Try Again";
+overButton.addEventListener('click', () => {
+    location.href = "?continue=true";
+})
+overWindow.appendChild(overTitle);
+overWindow.appendChild(overButton);
+
+
+// WIN
+let winWindow = document.createElement('div');
+winWindow.id = 'won';
+let winTitle = document.createElement('h1');
+winTitle.innerHTML = "<span>YOU WIN!</span>";
+let winP = document.createElement('p');
+winP.innerText = `Your score: \n ${ score1.innerText }`
+let winButton = document.createElement('button');
+winButton.innerText = "Do it again!";
+winButton.addEventListener('click', () => {
+    location.href = "?continue=true";
+})
+winWindow.appendChild(winTitle);
+winWindow.appendChild(winP);
+winWindow.appendChild(winButton);
+
 
 /*============ 
   GAME ENGINE
  ============*/
+
+// Game Over
+function isGameOver(){
+    sounds.explosion.cloneNode().play();
+    if(lives <= 0){
+        triggerModal(overWindow);
+    }
+    else{
+        lives--;
+        livesElem.innerText = lives;
+        document.querySelector('.footer-left').querySelector('.spaceship').remove()
+    }
+}
+
+// WIN
+function playerHasWon(){
+    if(aliens.length == 0){
+        winP.innerText = `Your score: \n ${ score1.innerText }`
+        triggerModal(winWindow);
+    }
+}
 
 // Collision resolution
 function colissionResolution() {
@@ -564,9 +626,8 @@ function colissionResolution() {
 
         if (hitCraft || hitLaser) {
             if (hitLaser) lasers[0].removeLaser();
-            if (hitCraft) alert('ship exploded')
+            if (hitCraft) isGameOver();
             alien.alienHit();
-            
 
         }
         else {
@@ -588,6 +649,7 @@ function gameLoop() {
             lasersPositioning();
             colissionResolution();
             moveAliens();
+            playerHasWon();
             gameLoop();
 
         }, 23);
@@ -604,7 +666,7 @@ gameLoop();
  // reset bounding box of aliens once DOM is loaded
  window.onload = () => {
     aliens.forEach( alien => alien.locationFromBoundingBoxes());
-    triggerModal(introWindow);
+    if(!playAgain) triggerModal(introWindow);
 };
 
 

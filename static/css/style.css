@@ -80,7 +80,7 @@ main{
     background: rgba(0,0,0,.8);
 }
 
-#intro{
+#intro, #gameover, #won{
     position: fixed;
     top: 20vh;
     left: 33vw;
@@ -91,16 +91,16 @@ main{
     text-align: center;
     font-size: 2rem;
 }
-#intro span{
+#intro span, #gameover span, #won span{
     display: block;
     font-size: 8rem;
 }
-#intro button{
+#intro button, #gameover button, #won button{
     font-family: Pixelar, Helvetica, sans-serif;
     font-size: 2.3rem;
     padding: 10px;
 }
-#intro p{
+#intro p, #gameover p, #won p{
     font-size: 1.8rem;
     padding: 5% 10%;
 }
